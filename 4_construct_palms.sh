@@ -1,0 +1,1 @@
+raxmlHPC -m GTRGAMMA -f a -N 10 -p 1234 -x 1234 -n palms -s alignment.fasta

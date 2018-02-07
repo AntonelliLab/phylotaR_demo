@@ -53,7 +53,3 @@ for(i in 1:length(clstrs_obj@clstr_ids)) {
   infile <- file.path(wd, paste0('sequences', i, '.fasta'))
   writeSqs(sids=sids, dflns=scnms, flpth=infile)
 }
-
-# mafft --auto sequences1.fasta > alignment1.fasta
-# mafft --auto sequences2.fasta > alignment2.fasta
-# raxmlHPC -m GTRGAMMA -f a -N 10 -p 1234 -x 1234 -n palms -s alignment.fasta
