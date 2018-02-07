@@ -1,5 +1,5 @@
 library(phylotaR)
-wd <- '/home/dom/Desktop/testing_phylotaR/palms'
+wd <- 'palms'
 
 # CLUSTER OBJ
 clstrs_obj <- genClstrsObj(wd)

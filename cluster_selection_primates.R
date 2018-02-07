@@ -1,5 +1,5 @@
 library(phylotaR)
-wd <- '/home/dom/Desktop/testing_phylotaR/primates'
+wd <- 'primates'
 
 # IDENTIFY BEST CLUSTER
 # generate cluster object
