@@ -8,6 +8,21 @@ A series of scripts for demonstrating the phylotaR pipeline for primates and pal
 - RAxML
 - MAFFT
 
+## Folder set-up
+```
+- palms
+- - [contains all palms phylotaR output]
+- primates
+- - [contains all primates phylotaR output]
+- taxdump.tar.gz
+- ncbi-blast-2.7.1+
+- - bin
+- - - [contains BLAST+ executables]
+```
+
+`taxdump.tar.gz` can be downloaded from ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/
+`ncbi-blast-2.7.1+` can be downloaded from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/. Download `*-src.tar.gz`, and extract. Note, the version number may be different for you and will need changed in the R scripts.
+
 ## Scripts
 - `run_*.R`: Intiate the phylotaR pipeline.
 - `cluster_selection_*.R`: Select clusters for alignments
