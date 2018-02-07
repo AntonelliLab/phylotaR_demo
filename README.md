@@ -24,11 +24,11 @@ A series of scripts for demonstrating the phylotaR pipeline for primates and pal
 `ncbi-blast-2.7.1+` can be downloaded from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/. Download `*-src.tar.gz`, and extract. Note, the version number may be different for you and will need changed in the R scripts. Alternatively these arguments can be left blank in the `run_*.R` scripts and BLAST tools from the system path will be used and phylotaR will download the taxonomy itself.
 
 ## Scripts
-- `run_*.R`: Intiate the phylotaR pipeline.
-- `cluster_selection_*.R`: Select clusters for alignments
-- `align_*.sh`: Align selected clusters with MAFFT
-- `supermatrix_*.R`: Generate supermatrices from alignments
-- `construct_*.sh`: Construct tree from supermatrix with RAxML
-- `visualise_*.R`: Visualise the best RAxML tree
+- `0_run_*.R`: Intiate the phylotaR pipeline.
+- `1_cluster_selection_*.R`: Select clusters for alignments
+- `2_align_*.sh`: Align selected clusters with MAFFT
+- `3_supermatrix_*.R`: Generate supermatrices from alignments
+- `4_construct_*.sh`: Construct tree from supermatrix with RAxML
+- `5_visualise_*.R`: Visualise the best RAxML tree
 
 Each R script must be run manually. Shell scripts are called from within R.
