@@ -37,4 +37,8 @@ Each R script must be run manually.
 
 ## Results
 
+Tree generated from two 'best' phylotaR clusters for palms and primates.
+
 ![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms_coplot.png)
+
+> Expected tree after Baker et al. (2009) Complete Generic-Level Phylogenetic Analyses of Palms (Arecaceae) with Comparisons of Supertree and Supermatrix Approaches. *Systematic Biology*, 58(2):240–256 [DOI](https://doi.org/10.1093/sysbio/syp021)
