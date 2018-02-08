@@ -42,10 +42,12 @@ reduceToFamily <- function(phylo, parent) {
   tm2Phylo(tree)
 }
 
-compareTrees <- function(phylo_1, phylo_2) {
+compareTrees <- function(phylo_1, phylo_2, parallel=FALSE) {
   tree_1 <- phylo2TM(phylo_1)
   tree_2 <- phylo2TM(phylo_2)
-  rf_dst <- calcDstRF(tree_1, tree_2)
-  trp_dst <- calcDstTrp(tree_1, tree_2)
-  list('rf_dst'=rf_dst, 'trp_dst'=trp_dst)
+  tree_1 <- suppressMessages(treeman::addNdmtrx(tree_1))
+  tree_2 <- suppressMessages(treeman::addNdmtrx(tree_2))
+  rf_dst <- treeman::calcDstRF(tree_1, tree_2)
+  trp_dst <- treeman::calcDstTrp(tree_1, tree_2, parallel=parallel)
+  data.frame('rf_dst'=rf_dst, 'trp_dst'=trp_dst)
 }

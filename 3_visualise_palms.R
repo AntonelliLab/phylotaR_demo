@@ -2,6 +2,7 @@
 
 # LIBS
 library(ape)
+library(doMC)
 source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
@@ -13,6 +14,9 @@ calamoideae <- c('Calamus', 'Ceratolobus', 'Daemonorops',
                  'Salacca', 'Eugeissona', 'Eremospatha',
                  'Laccosperma', 'Oncocalamus', 'Lepidocaryum',
                  'Mauritia', 'Mauritiella', 'Raphia')
+# calculating trip dist takes time, run in parallel
+# use doSnow for Windows
+registerDoMC(cores=4)
 
 # INPUT
 tree <- read.tree(file=file.path(wd, 'tree.tre'))
@@ -40,13 +44,24 @@ tree <- drop.tip(tree, tip=to_drp)
 tree_fmly <- reduceToFamily(tree, parent='Arecaceae')
 expctd_fmly <- reduceToFamily(expctd, parent='Arecaceae')
 
+# DISTS
+dsts <- compareTrees(tree, expctd, parallel=TRUE)
+write.csv(dsts, file=file.path('figures', 'palms_dst.csv'),
+          row.names=FALSE)
+
 # COPLOT
+if(!exists('dsts')) {
+  dsts <- read.csv(file.path('figures', 'palms_dst.csv'))
+}
 pull <- tree_fmly$tip.label %in% expctd_fmly$tip.label
 assoc <- cbind(tree_fmly$tip.label[pull], tree_fmly$tip.label[pull])
 png(file.path('figures', 'palms_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
 suppressWarnings(cophyloplot(tree_fmly, expctd_fmly, space=10,
                              gap=5))
-mtext(text='phylotaR', side=3, cex=1.5, line=-1.5, adj=.25)
-mtext(text='Expected', side=3, cex=1.5, line=-1.5, adj=.75)
+mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
+mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
+mtext(text=paste0('RF dist: ', dsts[['rf_dst']],
+                  ' | TRP dist: ', dsts[['trp_dst']]),
+      side=1, line=-1, adj=.1, cex=2.5)
 dev.off()

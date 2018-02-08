@@ -1,4 +1,5 @@
 # Root and visualise the palms tree
+# ... also calc tree dists
 
 # LIBS
 library(ape)
@@ -38,13 +39,24 @@ expctd <- drop.tip(expctd, tip=to_drp)
 to_drp <- tree$tip.label[!tree$tip.label %in% expctd$tip.label]
 tree <- drop.tip(tree, tip=to_drp)
 
+# DISTS
+dsts <- compareTrees(tree, expctd)
+write.csv(dsts, file=file.path('figures', 'primates_dst.csv'),
+          row.names=FALSE)
+
 # COPLOT
+if(!exists('dsts')) {
+  dsts <- read.csv(file.path('figures', 'primates_dst.csv'))
+}
 pull <- tree$tip.label %in% expctd$tip.label
 assoc <- cbind(tree$tip.label[pull], tree$tip.label[pull])
 png(file.path('figures', 'primates_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
 suppressWarnings(cophyloplot(tree, expctd, space=10,
                              gap=5))
-mtext(text='phylotaR', side=3, cex=1.5, line=-1.5, adj=.25)
-mtext(text='Expected', side=3, cex=1.5, line=-1.5, adj=.75)
+mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
+mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
+mtext(text=paste0('RF dist: ', dsts[['rf_dst']],
+                  ' | TRP dist: ', dsts[['trp_dst']]),
+      side=1, line=-1, adj=.1, cex=2.5)
 dev.off()
