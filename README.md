@@ -39,7 +39,7 @@ Each R script must be run manually.
 
 Genus-level trees generated from the two 'best' phylotaR clusters for palms and primates.
 
-#### Palms
+### Palms
 
 ![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms.png)
 
@@ -48,7 +48,7 @@ Genus-level trees generated from the two 'best' phylotaR clusters for palms and 
 
 ![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms_coplot.png)
 
-#### Primates
+### Primates
 
 ![Primates](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/primates.png)
 
