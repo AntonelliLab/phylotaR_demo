@@ -1,9 +1,9 @@
 # Demonstrating the phylotaR pipeline
-A series of scripts for demonstrating the phylotaR pipeline for primates and palms.
+A series of scripts for demonstrating the phylotaR pipeline for primates and palms. The scripts will first run the phylotaR pipeline and then generate alignments and trees.
 
 ## Requirements
 - R (version 3+)
-- phylotaR package
+- R packages: `phylotaR`, `ape` and `treeman`
 - BLAST+
 - RAxML
 - MAFFT
@@ -14,6 +14,10 @@ A series of scripts for demonstrating the phylotaR pipeline for primates and pal
 - - [contains all palms phylotaR output]
 - primates
 - - [contains all primates phylotaR output]
+- expected
+- - [expected trees of palms and primates]
+- figures
+- - [tree viz output]
 - taxdump.tar.gz
 - ncbi-blast-2.7.1+
 - - bin
@@ -25,10 +29,26 @@ A series of scripts for demonstrating the phylotaR pipeline for primates and pal
 
 ## Scripts
 - `0_run_*.R`: Intiate the phylotaR pipeline.
-- `1_cluster_selection_*.R`: Select clusters for alignments
-- `2_align_*.sh`: Align selected clusters with MAFFT
-- `3_supermatrix_*.R`: Generate supermatrices from alignments
-- `4_construct_*.sh`: Construct tree from supermatrix with RAxML
-- `5_visualise_*.R`: Visualise the best RAxML tree
+- `1_cluster_selection_*.R`: Select clusters for alignments and run alignments with MAFFT
+- `2_supermatrix_*.R`: Generate supermatrices from alignments and run RAxML
+- `3_visualise_*.R`: Visualise the best RAxML tree and compare to expected trees
 
-Each R script must be run manually. Shell scripts are called from within R.
+Each R script must be run manually.
+
+## Figures
+
+Tree generated from two 'best' phylotaR clusters for palms and primates.
+
+#### Palms
+
+![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms.png)
+
+
+### Family-level tree comparisons
+
+#### Palms
+
+> Expected tree after Baker et al. (2009) Complete Generic-Level Phylogenetic Analyses of Palms (Arecaceae) with Comparisons of Supertree and Supermatrix Approaches. *Systematic Biology*, 58(2):240–256 [DOI](https://doi.org/10.1093/sysbio/syp021)
+
+![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms_coplot.png)
+
