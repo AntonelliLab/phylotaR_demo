@@ -1,5 +1,5 @@
 # Demonstrating the phylotaR pipeline
-A series of scripts for demonstrating the phylotaR pipeline for primates and palms.
+A series of scripts for demonstrating the phylotaR pipeline for primates and palms. The scripts will first run the phylotaR pipeline and then generate alignments and trees.
 
 ## Requirements
 - R (version 3+)
@@ -35,11 +35,18 @@ A series of scripts for demonstrating the phylotaR pipeline for primates and pal
 
 Each R script must be run manually.
 
-## Results
+## Figures
 
 Tree generated from two 'best' phylotaR clusters for palms and primates.
 
-### Palms
+#### Palms
+
+![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms.png)
+
+
+### Family-level tree comparisons
+
+#### Palms
 
 > Expected tree after Baker et al. (2009) Complete Generic-Level Phylogenetic Analyses of Palms (Arecaceae) with Comparisons of Supertree and Supermatrix Approaches. *Systematic Biology*, 58(2):240–256 [DOI](https://doi.org/10.1093/sysbio/syp021)
 
