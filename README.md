@@ -44,6 +44,10 @@ Tree generated from two 'best' phylotaR clusters for palms and primates.
 ![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms.png)
 
 
+#### Primates
+
+![Primates](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/primates.png)
+
 ### Family-level tree comparisons
 
 #### Palms
@@ -51,4 +55,10 @@ Tree generated from two 'best' phylotaR clusters for palms and primates.
 > Expected tree after Baker et al. (2009) Complete Generic-Level Phylogenetic Analyses of Palms (Arecaceae) with Comparisons of Supertree and Supermatrix Approaches. *Systematic Biology*, 58(2):240–256 [DOI](https://doi.org/10.1093/sysbio/syp021)
 
 ![Palms](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/palms_coplot.png)
+
+#### Primates
+
+> Expected tree after Perelman et al. (2011) A Molecular Phylogeny of Living Primates. *PLOS Genetics* [DOI](https://doi.org/10.1371/journal.pgen.1001342)
+
+![Primates](https://raw.githubusercontent.com/AntonelliLab/phylotaR_demo/master/figures/primates_coplot.png)
 
