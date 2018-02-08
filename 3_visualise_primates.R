@@ -1,0 +1,50 @@
+# Root and visualise the palms tree
+
+# LIBS
+library(ape)
+source(file.path('tools', 'treeman_tools.R'))
+
+# VARS
+wd <- 'primates'
+prosimians <- c('Hapalemur', 'Lemur', 'Varecia', 'Eulemur',
+                'Avahi', 'Propithecus', 'Mirza', 'Daubentonia',
+                'Galago', 'Arctocebus', 'Perodicticus', 'Loris',
+                'Nycticebus', 'Galagoides', 'Euoticus')
+
+# INPUT
+tree <- read.tree(file=file.path(wd, 'tree.tre'))
+expctd <- read.nexus(file.path('expected', 'primates.nex'))
+
+# REROOT
+prosimians <- prosimians[prosimians %in% tree$tip.label]
+tree <- unroot(tree)
+tree <- root(tree, outgroup=prosimians, resolve.root=TRUE)
+
+# PLOT
+png(file.path('figures', 'primates.png'), width=2000, height=2000)
+par(mar=c(.1, .1, .1, .1))
+plot(tree, type='radial', cex=1.5)
+dev.off()
+
+# REDUCE TO EXPCTD TO GENUS
+genus_labels <- sub('_.*$', '', expctd$tip.label)
+to_drp <- expctd$tip.label[duplicated(genus_labels)]
+expctd <- drop.tip(expctd, tip=to_drp)
+expctd$tip.label <- sub('_.*$', '', expctd$tip.label)
+
+# DROP UNSHARED TIPS
+to_drp <- expctd$tip.label[!expctd$tip.label %in% tree$tip.label]
+expctd <- drop.tip(expctd, tip=to_drp)
+to_drp <- tree$tip.label[!tree$tip.label %in% expctd$tip.label]
+tree <- drop.tip(tree, tip=to_drp)
+
+# COPLOT
+pull <- tree$tip.label %in% expctd$tip.label
+assoc <- cbind(tree$tip.label[pull], tree$tip.label[pull])
+png(file.path('figures', 'primates_coplot.png'), width=2000, height=2000)
+par(cex=2, mar=c(1,.1,.1,.1))
+suppressWarnings(cophyloplot(tree, expctd, space=10,
+                             gap=5))
+mtext(text='phylotaR', side=3, cex=1.5, line=-1.5, adj=.25)
+mtext(text='Expected', side=3, cex=1.5, line=-1.5, adj=.75)
+dev.off()
