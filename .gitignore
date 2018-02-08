@@ -5,6 +5,8 @@ log.txt
 blast/
 taxonomy/
 tree.tre
+palms/
+primates/
 
 # History files
 .Rhistory
