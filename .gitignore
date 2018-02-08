@@ -1,3 +1,11 @@
+# phylotaR files
+*.fasta
+*.fasta.reduced
+log.txt
+blast/
+taxonomy/
+tree.tre
+
 # History files
 .Rhistory
 .Rapp.history

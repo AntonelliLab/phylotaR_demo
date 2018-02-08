@@ -1,4 +1,9 @@
+# Select two good clusters and align
+
+# LIBS
 library(phylotaR)
+
+# VARS
 wd <- 'palms'
 
 # CLUSTER OBJ
@@ -53,3 +58,11 @@ for(i in 1:length(clstrs_obj@clstr_ids)) {
   infile <- file.path(wd, paste0('sequences', i, '.fasta'))
   writeSqs(sids=sids, dflns=scnms, flpth=infile)
 }
+
+# ALIGN
+inpt <- file.path(wd, 'sequences1.fasta')
+otpt <- file.path(wd, 'alignment1.fasta')
+system(paste0('mafft --auto ', inpt, ' > ', otpt))
+inpt <- file.path(wd, 'sequences2.fasta')
+otpt <- file.path(wd, 'alignment2.fasta')
+system(paste0('mafft --auto ', inpt, ' > ', otpt))
