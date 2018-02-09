@@ -27,6 +27,14 @@ calamoideae <- calamoideae[calamoideae %in% tree$tip.label]
 tree <- unroot(tree)
 tree <- root(tree, outgroup=calamoideae, resolve.root=TRUE)
 
+# HOW MANY GENERA?
+esrch <- rentrez::entrez_search(db='taxonomy', term='txid4710[Subtree] AND genus[Rank]')
+genera_counts <- data.frame('actual'=esrch[['count']],
+                            'obs'=length(tree$tip.label))
+genera_counts[['prp']] <- genera_counts[['obs']]/genera_counts[['actual']]
+write.csv(genera_counts, file=file.path('figures', 'palms_counts.csv'),
+          row.names=FALSE)
+
 # PLOT
 png(file.path('figures', 'palms.png'), width=2000, height=2000)
 par(mar=c(.1, .1, .1, .1))
@@ -53,6 +61,9 @@ write.csv(dsts, file=file.path('figures', 'palms_dst.csv'),
 if(!exists('dsts')) {
   dsts <- read.csv(file.path('figures', 'palms_dst.csv'))
 }
+if(!exists('genera_counts')) {
+  genera_counts <- read.csv(file.path('figures', 'palms_counts.csv'))
+}
 pull <- tree_fmly$tip.label %in% expctd_fmly$tip.label
 assoc <- cbind(tree_fmly$tip.label[pull], tree_fmly$tip.label[pull])
 png(file.path('figures', 'palms_coplot.png'), width=2000, height=2000)
@@ -64,4 +75,8 @@ mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
 mtext(text=paste0('RF dist: ', dsts[['rf_dst']],
                   ' | TRP dist: ', dsts[['trp_dst']]),
       side=1, line=-1, adj=.1, cex=2.5)
+mtext(text=paste0('Obs N. ', genera_counts[['obs']],
+                  ' | Actual N. ', genera_counts[['actual']],
+                  ' (', signif(genera_counts[['prp']], 2), ')'),
+      side=1, line=-1, adj=.9, cex=2.5)
 dev.off()

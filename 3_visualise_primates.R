@@ -21,6 +21,14 @@ prosimians <- prosimians[prosimians %in% tree$tip.label]
 tree <- unroot(tree)
 tree <- root(tree, outgroup=prosimians, resolve.root=TRUE)
 
+# HOW MANY GENERA?
+esrch <- rentrez::entrez_search(db='taxonomy', term='txid9443[Subtree] AND genus[Rank]')
+genera_counts <- data.frame('actual'=esrch[['count']],
+                            'obs'=length(tree$tip.label))
+genera_counts[['prp']] <- genera_counts[['obs']]/genera_counts[['actual']]
+write.csv(genera_counts, file=file.path('figures', 'primates_counts.csv'),
+          row.names=FALSE)
+
 # PLOT
 png(file.path('figures', 'primates.png'), width=2000, height=2000)
 par(mar=c(.1, .1, .1, .1))
@@ -48,6 +56,9 @@ write.csv(dsts, file=file.path('figures', 'primates_dst.csv'),
 if(!exists('dsts')) {
   dsts <- read.csv(file.path('figures', 'primates_dst.csv'))
 }
+if(!exists('genera_counts')) {
+  genera_counts <- read.csv(file.path('figures', 'primates_counts.csv'))
+}
 pull <- tree$tip.label %in% expctd$tip.label
 assoc <- cbind(tree$tip.label[pull], tree$tip.label[pull])
 png(file.path('figures', 'primates_coplot.png'), width=2000, height=2000)
@@ -59,4 +70,8 @@ mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
 mtext(text=paste0('RF dist: ', dsts[['rf_dst']],
                   ' | TRP dist: ', dsts[['trp_dst']]),
       side=1, line=-1, adj=.1, cex=2.5)
+mtext(text=paste0('Obs N. ', genera_counts[['obs']],
+                  ' | Actual N. ', genera_counts[['actual']],
+                  ' (', signif(genera_counts[['prp']], 2), ')'),
+      side=1, line=-1, adj=.9, cex=2.5)
 dev.off()
