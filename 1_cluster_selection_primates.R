@@ -1,39 +1,51 @@
+# Identify best clusters
+
+# LIBS
 library(phylotaR)
+source(file.path('tools', 'selection_tools.R'))
+
+# VARS
 wd <- 'primates'
 
-# IDENTIFY BEST CLUSTER
-# generate cluster object
+# INPUT
 clstrs_obj <- genClstrsObj(wd)
+
+# CLTYPE STATS
+# drop clusters of 1
+n_taxa <- getClNTx(clstrs_obj,
+                   clstrs_obj@clstr_ids)
+keep <- names(n_taxa)[n_taxa > 10]
+clstrs_obj <- drpClstrs(clstrs_obj, keep)
+table(sapply(clstrs_obj@clstrs, function(x) x[['cl_type']]))
+
+
+# FILTER
 # get n taxa per cluster
 n_taxa <- getClNTx(clstrs_obj,
                    clstrs_obj@clstr_ids)
-# drop all clusters with fewer than 50 taxa
+# drop all clusters with fewer than 100 taxa
 keep <- names(n_taxa)[n_taxa > 100]
 clstrs_obj <- drpClstrs(clstrs_obj, keep)
-# filter each cluster in the cluster object
-#  - keep only sequences repres. genus or higher
-#  - drop all sequences with % ambiguous bases of more than 50%
-#  - keep only the largest sequence of each genus
 for(id in clstrs_obj@clstr_ids) {
   clstrs_obj<- fltrClstrSqs(clstrs_obj, id=id,
                             rank='genus', mn_pambg=0.5)
 }
-# drop all clusters with MAD scores less than .95
+# drop all clusters with MAD scores less than .5
 mad_scrs <- getClMAD(clstrs_obj, clstrs_obj@clstr_ids)
-keep <- names(mad_scrs)[mad_scrs > .8]
+keep <- names(mad_scrs)[mad_scrs > .5]
 clstrs_obj <- drpClstrs(clstrs_obj, keep)
-# look at the median sequence length of each cluster
-(sqlngs <- getClMdLn(clstrs_obj, clstrs_obj@clstr_ids))
-# check n taxa
-(n_taxa <- getClNTx(clstrs_obj, clstrs_obj@clstr_ids))
-hist(n_taxa)
-# drop cluster with less than max sequences
-keep <- names(n_taxa)[n_taxa == 45]
+
+# SUMMARY
+smmry <- genSumTable(clstrs_obj)
+write.csv(smmry, file.path('figures', 'best_clusters_primates.csv'))
+
+# SELECT
+n_taxa <- getClNTx(clstrs_obj,
+                   clstrs_obj@clstr_ids)
+keep <- names(n_taxa)[n_taxa > 50]
 clstrs_obj <- drpClstrs(clstrs_obj, keep)
-# look at most common words in definition lines of each cluster
-for(id in clstrs_obj@clstr_ids) {
-  print(getSqDfs(clstrs_obj, id=id, prse=0.2))
-}
+
+# OUTPUT
 # write out both clusters
 for(i in 1:length(clstrs_obj@clstr_ids)) {
   cid <- clstrs_obj@clstr_ids[[i]]
@@ -48,9 +60,9 @@ for(i in 1:length(clstrs_obj@clstr_ids)) {
 }
 
 # ALIGN
-inpt <- file.path(wd, 'sequences1.fasta')
-otpt <- file.path(wd, 'alignment1.fasta')
-system(paste0('mafft --auto ', inpt, ' > ', otpt))
-inpt <- file.path(wd, 'sequences2.fasta')
-otpt <- file.path(wd, 'alignment2.fasta')
-system(paste0('mafft --auto ', inpt, ' > ', otpt))
+for(i in 1:length(clstrs_obj@clstr_ids)) {
+  inpt <- file.path(wd, paste0('sequences', i,
+                               '.fasta'))
+  otpt <- file.path(wd, paste0('alignment', i,'.fasta'))
+  system(paste0('mafft --auto ', inpt, ' > ', otpt))
+}
