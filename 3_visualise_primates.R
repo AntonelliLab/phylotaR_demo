@@ -7,13 +7,18 @@ source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
 wd <- 'primates'
+prosimians <- read.delim(file.path(wd, 'prosimians'),
+                         stringsAsFactors=FALSE)[ ,1]
 prosimians <- c('Hapalemur', 'Lemur', 'Varecia', 'Eulemur',
                 'Avahi', 'Propithecus', 'Mirza', 'Daubentonia',
                 'Galago', 'Arctocebus', 'Perodicticus', 'Loris',
                 'Nycticebus', 'Galagoides', 'Euoticus')
 
 # INPUT
-tree <- read.tree(file=file.path(wd, 'tree.tre'))
+trstr <- readLines(file.path(wd, 'consensus.tre'))
+trstr <- gsub(':[0-9.]+', '', trstr)
+trstr <- gsub('(\\[|\\])', '', trstr)
+tree <- read.tree(text=trstr)
 expctd <- read.nexus(file.path('expected', 'primates.nex'))
 
 # REROOT
@@ -29,10 +34,20 @@ genera_counts[['prp']] <- genera_counts[['obs']]/genera_counts[['actual']]
 write.csv(genera_counts, file=file.path('figures', 'primates_counts.csv'),
           row.names=FALSE)
 
+# BRANCH SUPPORTS
+spprt <- tree$node.label
+spprt <- suppressWarnings(as.numeric(spprt))
+spprt[is.na(spprt)] <- 0
+nd_lbls <- rep('', length(spprt))
+nd_lbls[spprt > 50] <- '*'
+nd_lbls[spprt > 75] <- '**'
+nd_lbls[spprt > 95] <- '***'
+
 # PLOT
 png(file.path('figures', 'primates.png'), width=2000, height=2000)
 par(mar=c(.1, .1, .1, .1))
-plot(tree, type='radial', cex=1.5)
+plot(tree, cex=1.5)
+nodelabels(text=nd_lbls, frame='none', cex=1.5, adj=-1)
 dev.off()
 
 # REDUCE TO EXPCTD TO GENUS

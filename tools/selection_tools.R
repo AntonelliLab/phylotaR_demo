@@ -4,7 +4,7 @@ genSumTable <- function(clstrs_obj, n=10) {
   sq_dfs <- rep(NA, length(n_taxa))
   for(i in seq_along(clstrs_obj@clstr_ids)) {
     id <- clstrs_obj@clstr_ids[i]
-    sq_dfs[i] <- getSqDfs(clstrs_obj, id=id, prse=0.2)
+    sq_dfs[i] <- getSqDfs(clstrs_obj, id=id, prse=0.1)
   }
   names(sq_dfs) <- clstrs_obj@clstr_ids
   top_ids <- names(sort(n_taxa, decreasing=TRUE))[1:n]
