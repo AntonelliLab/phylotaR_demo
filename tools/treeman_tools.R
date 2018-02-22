@@ -16,6 +16,26 @@ phylo2TM <- function(phylo) {
   tree
 }
 
+getNNs <- function(phylo) {
+  tree <- phylo2TM(phylo)
+  res <- vector('list', length=tree['ntips'])
+  names(res) <- tree@tips
+  for(tp in tree@tips) {
+    res[[tp]] <- treeman::getNdSstr(tree, id=tp)
+  }
+  res
+}
+
+calcNNs <- function(phylo) {
+  # Proportion of tips who are sister with their genus
+  nns <- getNNs(phylo)
+  res <- sapply(seq_along(nns), function(x) {
+    pttrn <- sub('_[0-9]+', '', names(nns)[[x]])
+    any(grepl(pttrn, nns[[x]]))
+  })
+  sum(res)/length(res)
+}
+
 taxonomicallyInform <- function(tree, parent) {
   # Look up taxonomic ranks for nodes using GNR
   txnyms <- treeman::searchTxnyms(tree, cache=TRUE, infer=TRUE,

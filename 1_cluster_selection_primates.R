@@ -10,25 +10,6 @@ wd <- 'primates'
 # INPUT
 clstrs_obj <- genClstrsObj(wd)
 
-fnd <- NULL
-for(i in seq_along(clstrs_obj@sqs)) {
-  dfln <- clstrs_obj@sqs[[i]][['def']]
-  bool <- grepl('cytb', dfln, ignore.case=TRUE)
-  if(bool) {
-    fnd <- c(fnd, clstrs_obj@sqs[[i]][['gi']])
-  }
-}
-
-cytb_clstrs <- NULL
-for(i in seq_along(clstrs_obj@clstrs)) {
-  gis <- clstrs_obj@clstrs[[i]][['gis']]
-  if(any(fnd %in% gis)) {
-    print(i)
-    cytb_clstrs <- c(clstrs_obj@clstrs[[i]][['ci']],
-                     cytb_clstrs)
-  }
-}
-
 # CLTYPE STATS
 # drop clusters of 1
 n_taxa <- getClNTx(clstrs_obj,
@@ -36,7 +17,6 @@ n_taxa <- getClNTx(clstrs_obj,
 keep <- names(n_taxa)[n_taxa > 10]
 clstrs_obj <- drpClstrs(clstrs_obj, keep)
 table(sapply(clstrs_obj@clstrs, function(x) x[['cl_type']]))
-
 
 # FILTER
 # get n taxa per cluster

@@ -1,27 +1,27 @@
-drpOvrhngs <- function(sqs, ctff=.75) {
-  for(sq in sqs) {
-    gps_mtrx <- matrix(FALSE, ncol=nchar(sq[[1]]),
-                       nrow=length(sq))
-    for(i in seq_along(sq)) {
-      pull <- gregexpr('-', sq[[i]])[[1]]
-      gps_mtrx[i, pull] <- TRUE
+drpOvrhngs <- function(als, ctff=.75) {
+  for(i in seq_along(als)) {
+    gps_mtrx <- matrix(FALSE, ncol=nchar(als[[i]][[1]]),
+                       nrow=length(als[[i]]))
+    for(j in seq_along(als[[i]])) {
+      pull <- gregexpr('-', als[[i]][[j]])[[1]]
+      gps_mtrx[j, pull] <- TRUE
     }
     prp_mssng <- 1 - (colSums(gps_mtrx)/nrow(gps_mtrx))
     ovrlppng <- which(prp_mssng > ctff)
     strt <- ovrlppng[1]
     end <- ovrlppng[length(ovrlppng)]
-    for(i in seq_along(sq)) {
-      sq[[i]] <- substr(sq[[i]], start=strt, stop=end)
+    for(j in seq_along(als[[i]])) {
+      als[[i]][[j]] <- substr(als[[i]][[j]], start=strt, stop=end)
     }
   }
-  sqs
+  als
 }
 
-spltUp <- function(sq, ctff=.75, mn_lngth=500) {
-  gps_mtrx <- matrix(FALSE, ncol=nchar(sq[[1]]),
-                     nrow=length(sq))
-  for(i in seq_along(sq)) {
-    pull <- gregexpr('-', sq[[i]])[[1]]
+spltUp <- function(al, ctff=.75, mn_lngth=500) {
+  gps_mtrx <- matrix(FALSE, ncol=nchar(al[[1]]),
+                     nrow=length(al))
+  for(i in seq_along(al)) {
+    pull <- gregexpr('-', al[[i]])[[1]]
     gps_mtrx[i, pull] <- TRUE
   }
   prp_mssng <- 1 - (colSums(gps_mtrx)/nrow(gps_mtrx))
@@ -31,18 +31,18 @@ spltUp <- function(sq, ctff=.75, mn_lngth=500) {
   pull <- lngths > mn_lngth
   strts <- strts[pull]
   ends <- ends[pull]
-  new_sqs <- vector('list', length=length(strts))
+  new_als <- vector('list', length=length(strts))
   for(i in seq_along(strts)) {
     strt <- strts[i]
     end <- ends[i]
-    new_sq <- vector('list', length=length(sq))
-    for(j in seq_along(sq)) {
-      new_sq[[j]] <- substr(sq[[j]], start=strt, stop=end)
+    new_al <- vector('list', length=length(al))
+    for(j in seq_along(al)) {
+      new_al[[j]] <- substr(al[[j]], start=strt, stop=end)
     }
-    names(new_sq) <- names(sq)
-    new_sqs[[i]] <- new_sq
+    names(new_al) <- names(al)
+    new_als[[i]] <- new_al
   }
-  new_sqs
+  new_als
 }
 
 

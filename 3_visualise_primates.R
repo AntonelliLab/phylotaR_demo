@@ -9,10 +9,6 @@ source(file.path('tools', 'treeman_tools.R'))
 wd <- 'primates'
 prosimians <- read.delim(file.path(wd, 'prosimians'),
                          stringsAsFactors=FALSE)[ ,1]
-prosimians <- c('Hapalemur', 'Lemur', 'Varecia', 'Eulemur',
-                'Avahi', 'Propithecus', 'Mirza', 'Daubentonia',
-                'Galago', 'Arctocebus', 'Perodicticus', 'Loris',
-                'Nycticebus', 'Galagoides', 'Euoticus')
 
 # INPUT
 trstr <- readLines(file.path(wd, 'consensus.tre'))

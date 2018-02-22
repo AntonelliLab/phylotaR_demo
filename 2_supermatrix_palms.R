@@ -1,44 +1,78 @@
 # Combine alignments into a supermatrix, run RAxML
 
 # LIBS
-source('tools', 'supermatrix_tools.R')
+source(file.path('tools', 'supermatrix_tools.R'))
 
 # VARS
 wd <- 'palms'
+calamoideae <- read.delim(file.path(wd, 'calamoideae'),
+                          stringsAsFactors=FALSE)[ ,1]
 
 # INPUT
-sqs1 <- readSqs(file.path(wd, 'alignment1.fasta'))
-sqs2 <- readSqs(file.path(wd, 'alignment2.fasta'))
+alfls <- list.files(wd, pattern='alignment[0-9]+.fasta')
+als <- vector('list', length=length(alfls))
+for(i in seq_along(alfls)) {
+  als[[i]] <- readSqs(file.path(wd, alfls[i]))
+}
+
+# DROP OVERHANGING EDGES
+(sapply(als, function(x) nchar(x[[1]])))
+als <- drpOvrhngs(als)
+(sapply(als, function(x) nchar(x[[1]])))
+n_taxa <- sapply(als, length)
 
 # GEN PARTITION TEXT
-lngths <- c(nchar(sqs1[[1]]), nchar(sqs2[[1]]))
+lngths <- sapply(als, function(x) nchar(x[[1]]))
 partition(lngths, fl=file.path(wd, 'partition.txt'))
 
 # GEN SUPERMARTIX
-fllr1 <- paste0(rep('-', lngths[[1]]), collapse='')
-fllr2 <- paste0(rep('-', lngths[[2]]), collapse='')
-all_nms <- unique(c(names(sqs1), names(sqs2)))
+fllrs <- sapply(lngths, function(x) paste0(rep('-', x),
+                                           collapse=''))
+all_nms <- unique(unlist(sapply(als, names)))
 all_nms <- sort(all_nms)
+pull <- !grepl('\\ssp\\.', all_nms)
+all_nms <- all_nms[pull]
 sprmtrx <- vector('list', length=length(all_nms))
 names(sprmtrx) <- all_nms
 for(nm in all_nms) {
-  sq1 <- sqs1[[nm]]
-  sq1 <- ifelse(is.null(sq1), fllr1, sq1)
-  sq2 <- sqs2[[nm]]
-  sq2 <- ifelse(is.null(sq2), fllr2, sq2)
-  sprmtrx[[nm]] <- paste0(sq1, sq2)
+  al <- ''
+  for(i in seq_along(als)) {
+    tmp <- als[[i]][[nm]]
+    tmp <- ifelse(is.null(tmp), fllrs[[i]], tmp)
+    al <- paste0(al, tmp)
+  }
+  sprmtrx[[nm]] <- al
 }
+
+# DROP TAXA WITH TOO MANY GAPS
+ngaps <- sapply(gregexpr('-', sprmtrx), length)
+pull <- ngaps < nchar(sprmtrx[[1]])
+sprmtrx <- sprmtrx[pull]
 
 # CHECK AND WRITE OUT
 all(sapply(sprmtrx, nchar) == nchar(sprmtrx[[1]]))
-sprmtrx <- sprmtrx[!grepl('^Arecaceae', names(sprmtrx))]
+names(sprmtrx) <- gsub('\\s', '_', names(sprmtrx))
 writeSqs(sprmtrx, fl=file.path(wd, 'supermatrix.fasta'))
+
+# OUTGROUP
+nms <- sub('_[0-9]', '', names(sprmtrx))
+pull <- sapply(nms, function(x) any(grepl(x, calamoideae)))
+outgroup <- names(sprmtrx)[pull]
+outgroup <- paste0(outgroup, collapse=',')
 
 # RAxML
 # Warning: partition.txt may need minor modification depending on gene type
 inpt <- file.path(wd, 'supermatrix.fasta')
-system(paste0('raxmlHPC -m GTRGAMMA -f a -N 10 -p 1234 -x 1234 -n palms -s ', inpt))
+prttnfl <- file.path(wd, 'partition.txt')
+system(paste0('raxmlHPC -f a -m GTRGAMMA -T 2 -# 100 -p ',
+              sample(0:10000000, 1), ' -x ', sample(0:10000000, 1),
+              ' -n palms -s ', inpt, ' -q ', prttnfl, ' -o ', outgroup))
+# consensus
+system('raxmlHPC -m GTRCAT -J MR -z RAxML_bootstrap.palms -n palms_con')
 
 # CLEAN-UP
-file.rename('RAxML_bestTree.palms', file.path(wd, 'tree.tre'))
+file.rename('RAxML_bestTree.palms', file.path(wd, 'best_tree.tre'))
+file.rename('RAxML_bootstrap.palms', file.path(wd, 'bootstraps.tre'))
+file.rename('RAxML_MajorityRuleConsensusTree.palms_con',
+            file.path(wd, 'consensus.tre'))
 file.remove(list.files(pattern='RAxML*'))
