@@ -5,42 +5,43 @@ source(file.path('tools', 'supermatrix_tools.R'))
 
 # VARS
 wd <- 'primates'
+prosimians <- read.delim(file.path(wd, 'prosimians'),
+                         stringsAsFactors=FALSE)[ ,1]
 
 # INPUT
-sqfls <- list.files(wd, pattern='alignment[0-9]+.fasta')
-sqs <- vector('list', length=length(sqfls))
-for(i in seq_along(sqfls)) {
-  sqs[[i]] <- readSqs(file.path(wd, sqfls[i]))
+alfls <- list.files(wd, pattern='alignment[0-9]+.fasta')
+als <- vector('list', length=length(alfls))
+for(i in seq_along(alfls)) {
+  als[[i]] <- readSqs(file.path(wd, alfls[i]))
 }
 
 # DROP OVERHANGING EDGES
-sqs <- drpOvrhngs(sqs)
-(sapply(sqs, function(x) nchar(x[[1]])))
-# drop first cluster -- too big
-new_sqs <- spltUp(sqs[[1]], mn_lngth=700)
-(sapply(new_sqs, function(x) nchar(x[[1]])))
-sqs <- sqs[-1]
-sqs <- c(sqs, new_sqs)
+(sapply(als, function(x) nchar(x[[1]])))
+als <- drpOvrhngs(als)
+(sapply(als, function(x) nchar(x[[1]])))
+n_taxa <- sapply(als, length)
 
 # GEN PARTITION TEXT
-lngths <- sapply(sqs, function(x) nchar(x[[1]]))
+lngths <- sapply(als, function(x) nchar(x[[1]]))
 partition(lngths, fl=file.path(wd, 'partition.txt'))
 
 # GEN SUPERMARTIX
 fllrs <- sapply(lngths, function(x) paste0(rep('-', x),
                                            collapse=''))
-all_nms <- unique(unlist(sapply(sqs, names)))
+all_nms <- unique(unlist(sapply(als, names)))
 all_nms <- sort(all_nms)
+pull <- !grepl('\\ssp\\.', all_nms)
+all_nms <- all_nms[pull]
 sprmtrx <- vector('list', length=length(all_nms))
 names(sprmtrx) <- all_nms
 for(nm in all_nms) {
-  sq <- ''
-  for(i in seq_along(sqs)) {
-    tmp <- sqs[[i]][[nm]]
+  al <- ''
+  for(i in seq_along(als)) {
+    tmp <- als[[i]][[nm]]
     tmp <- ifelse(is.null(tmp), fllrs[[i]], tmp)
-    sq <- paste0(sq, tmp)
+    al <- paste0(al, tmp)
   }
-  sprmtrx[[nm]] <- sq
+  sprmtrx[[nm]] <- al
 }
 
 # DROP TAXA WITH TOO MANY GAPS
@@ -50,22 +51,22 @@ sprmtrx <- sprmtrx[pull]
 
 # CHECK AND WRITE OUT
 all(sapply(sprmtrx, nchar) == nchar(sprmtrx[[1]]))
+names(sprmtrx) <- gsub('\\s', '_', names(sprmtrx))
 writeSqs(sprmtrx, fl=file.path(wd, 'supermatrix.fasta'))
 
-# DEFINE OUTGROUP
-prosimians <- c('Hapalemur', 'Lemur', 'Varecia', 'Eulemur',
-                'Avahi', 'Propithecus', 'Mirza', 'Daubentonia',
-                'Galago', 'Arctocebus', 'Perodicticus', 'Loris',
-                'Nycticebus', 'Galagoides', 'Euoticus')
-outgroup <- prosimians[prosimians %in% names(sprmtrx)]
+# OUTGROUP
+nms <- sub('_[0-9]', '', names(sprmtrx))
+pull <- sapply(nms, function(x) any(grepl(x, prosimians)))
+outgroup <- names(sprmtrx)[pull]
 outgroup <- paste0(outgroup, collapse=',')
 
 # RAxML
 # Warning: partition.txt may need minor modification depending on gene type
 inpt <- file.path(wd, 'supermatrix.fasta')
+prttnfl <- file.path(wd, 'partition.txt')
 system(paste0('raxmlHPC -f a -m GTRGAMMA -T 2 -# 100 -p ',
               sample(0:10000000, 1), ' -x ', sample(0:10000000, 1),
-              ' -n primates -s ', inpt))
+              ' -n primates -s ', inpt, ' -q ', prttnfl, ' -o ', outgroup))
 # consensus
 system('raxmlHPC -m GTRCAT -J MR -z RAxML_bootstrap.primates -n primates_con')
 

@@ -1,8 +1,9 @@
-# Root and visualise the palms tree
-# ... also calc tree dists
+# Visualise the primates tree
+# TODO: update reduction to the tribe level
 
 # LIBS
 library(ape)
+library(doMC)
 source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
@@ -16,6 +17,21 @@ trstr <- gsub(':[0-9.]+', '', trstr)
 trstr <- gsub('(\\[|\\])', '', trstr)
 tree <- read.tree(text=trstr)
 expctd <- read.nexus(file.path('expected', 'primates.nex'))
+
+# REDUCE TREE
+nns_dst <- calcNNs(tree)
+tp_lbls <- tree[['tip.label']]
+tp_lbls <- sub('_[0-9]+', '', tp_lbls)
+to_drp <- tree[['tip.label']][duplicated(tp_lbls)]
+tree <- drop.tip(tree, to_drp)
+tree[['tip.label']] <- sub('_[0-9]+', '', tree[['tip.label']])
+tree[['tip.label']] <- sub('_.*', '', tree[['tip.label']])
+
+# REDUCE EXPECTED TO GENUS-LEVEL
+genus_labels <- sub('_.*$', '', expctd[['tip.label']])
+to_drp <- expctd$tip.label[duplicated(genus_labels)]
+expctd <- drop.tip(expctd, tip=to_drp)
+expctd$tip.label <- sub('_.*$', '', expctd$tip.label)
 
 # REROOT
 prosimians <- prosimians[prosimians %in% tree$tip.label]
@@ -42,21 +58,17 @@ nd_lbls[spprt > 95] <- '***'
 # PLOT
 png(file.path('figures', 'primates.png'), width=2000, height=2000)
 par(mar=c(.1, .1, .1, .1))
-plot(tree, cex=1.5)
-nodelabels(text=nd_lbls, frame='none', cex=1.5, adj=-1)
+plot(tree, edge.width=4, cex=3.5)
+nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
-
-# REDUCE TO EXPCTD TO GENUS
-genus_labels <- sub('_.*$', '', expctd$tip.label)
-to_drp <- expctd$tip.label[duplicated(genus_labels)]
-expctd <- drop.tip(expctd, tip=to_drp)
-expctd$tip.label <- sub('_.*$', '', expctd$tip.label)
 
 # DROP UNSHARED TIPS
 to_drp <- expctd$tip.label[!expctd$tip.label %in% tree$tip.label]
 expctd <- drop.tip(expctd, tip=to_drp)
 to_drp <- tree$tip.label[!tree$tip.label %in% expctd$tip.label]
-tree <- drop.tip(tree, tip=to_drp)
+tree_cmp <- drop.tip(tree, tip=to_drp)
+tree_cmp <- ladderize(tree_cmp)
+expctd <- ladderize(expctd)
 
 # DISTS
 dsts <- compareTrees(tree, expctd)
@@ -70,11 +82,9 @@ if(!exists('dsts')) {
 if(!exists('genera_counts')) {
   genera_counts <- read.csv(file.path('figures', 'primates_counts.csv'))
 }
-pull <- tree$tip.label %in% expctd$tip.label
-assoc <- cbind(tree$tip.label[pull], tree$tip.label[pull])
 png(file.path('figures', 'primates_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
-suppressWarnings(cophyloplot(tree, expctd, space=10,
+suppressWarnings(cophyloplot(tree_cmp, expctd, space=10,
                              gap=5))
 mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
 mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)

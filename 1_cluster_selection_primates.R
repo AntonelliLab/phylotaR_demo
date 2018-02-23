@@ -3,6 +3,7 @@
 # LIBS
 library(phylotaR)
 source(file.path('tools', 'selection_tools.R'))
+source('dev.R')
 
 # VARS
 wd <- 'primates'
@@ -18,17 +19,28 @@ keep <- names(n_taxa)[n_taxa > 10]
 clstrs_obj <- drpClstrs(clstrs_obj, keep)
 table(sapply(clstrs_obj@clstrs, function(x) x[['cl_type']]))
 
-# FILTER
+# REDUCE
 # get n taxa per cluster
 n_taxa <- getClNTx(clstrs_obj,
                    clstrs_obj@clstr_ids)
 # drop all clusters with fewer than 100 taxa
 keep <- names(n_taxa)[n_taxa > 100]
 clstrs_obj <- drpClstrs(clstrs_obj, keep)
-for(id in clstrs_obj@clstr_ids) {
-  clstrs_obj<- fltrClstrSqs(clstrs_obj, id=id,
-                            rank='genus', mn_pambg=0.5)
+
+# DROP SUSPECT SEQUENCES
+# 168275671, a synthetic sequence, not sure how to handle
+# 313882623 -- also synthetic
+blcklst <- c(168275671, 313882623)
+clstrs_obj <- rmSqs(clstrs_obj, blcklst)
+
+# FILTER
+for(cid in clstrs_obj@clstr_ids) {
+  clstrs_obj<- fltrClstrSqs(clstrs_obj, id=cid,
+                            rnk='genus', mn_pambg=0.5,
+                            n_ech=2)
 }
+
+# REDUCE
 # drop all clusters with MAD scores less than .5
 mad_scrs <- getClMAD(clstrs_obj, clstrs_obj@clstr_ids)
 keep <- names(mad_scrs)[mad_scrs > .5]
@@ -38,28 +50,30 @@ clstrs_obj <- drpClstrs(clstrs_obj, keep)
 smmry <- genSumTable(clstrs_obj)
 write.csv(smmry, file.path('figures', 'best_clusters_primates.csv'))
 
-# SELECT
-n_taxa <- getClNTx(clstrs_obj,
-                   clstrs_obj@clstr_ids)
-keep <- names(n_taxa)[n_taxa > 50]
-clstrs_obj <- drpClstrs(clstrs_obj, keep)
-
 # OUTPUT
-# write out both clusters
-for(i in 1:length(clstrs_obj@clstr_ids)) {
+# write out top 10 clusters with most taxa
+cids <- smmry[['id']][1:10]
+sqfls <- list.files(wd, pattern='sequences[0-9]+.fasta')
+rmFls(file.path(wd, sqfls))
+for(i in seq_along(cids)) {
   cid <- clstrs_obj@clstr_ids[[i]]
   getSqDfs(clstrs_obj, id=cid, prse=0.1)
   # get its sequences IDs
   sids <- clstrs_obj@clstrs[[cid]][['gis']]
-  # get genus names for fasta def. lines
+  tids <- sapply(sids, function(x) clstrs_obj@sqs[[x]][['ti']])
+  # get sci names for fasta def. lines
   scnms <- getIDFrmTxdct(clstrs_obj@txdct, ret='ScientificName',
-                         id=names(sids), rank='genus')
+                         id=tids, rnk='genus')
+  n <- sapply(seq_along(scnms), function(x) 
+    sum(scnms[x] == scnms[x:length(scnms)]))
   infile <- file.path(wd, paste0('sequences', i, '.fasta'))
-  writeSqs(sids=sids, dflns=scnms, flpth=infile)
+  writeSqs(sids=sids, dflns=paste0(scnms, '_', n), flpth=infile)
 }
 
 # ALIGN
-for(i in 1:length(clstrs_obj@clstr_ids)) {
+alfls <- list.files(wd, pattern='alignment[0-9]+.fasta')
+rmFls(file.path(wd, alfls))
+for(i in seq_along(cids)) {
   inpt <- file.path(wd, paste0('sequences', i,
                                '.fasta'))
   otpt <- file.path(wd, paste0('alignment', i,'.fasta'))
