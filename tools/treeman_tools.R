@@ -38,23 +38,25 @@ calcNNs <- function(phylo) {
 
 taxonomicallyInform <- function(tree, parent) {
   # Look up taxonomic ranks for nodes using GNR
-  txnyms <- treeman::searchTxnyms(tree, cache=TRUE, infer=TRUE,
-                         clean=TRUE, parent=parent)
+  txnyms <- treeman::searchTxnyms(tree, cache=TRUE,
+                                  infer=TRUE, clean=FALSE,
+                                  parent=parent)
   tree <- treeman::setTxnyms(tree, txnyms)
   tree
 }
 
-reduceToFamily <- function(phylo, parent) {
+reduceToFamily <- function(phylo, parent, tp_gls) {
+  calc <- function(lng) {
+    psslbs <- lng[lng %in% tp_gls]
+    psslbs[length(psslbs)]
+  }
   # convert phylo to TreeMan
   tree <- phylo2TM(phylo)
   tree <- taxonomicallyInform(tree, parent)
   lngs <- treeman::getNdsLng(tree, tree['tips'])
-  # can't use named ranks, choosing level up
-  fmls <- vapply(lngs, function(x) x[[length(x)-1]], '')
-  # ignore all ambiguous entries
-  fmls <- fmls[fmls != '']
-  to_keep <- names(fmls)[!duplicated(fmls)]
-  nw_nms <- fmls[!duplicated(fmls)]
+  gls <- unlist(sapply(lngs, calc))
+  to_keep <- names(gls)[!duplicated(gls) & !is.na(gls)]
+  nw_nms <- gls[!duplicated(gls) & !is.na(gls)]
   to_drop <- tree['tips'][!tree['tips'] %in% to_keep]
   tree <- treeman::rmTips(tree, to_drop)
   tree <- treeman::setNdsID(tree, to_keep, nw_nms)
