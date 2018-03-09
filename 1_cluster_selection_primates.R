@@ -3,77 +3,71 @@
 # LIBS
 library(phylotaR)
 source(file.path('tools', 'selection_tools.R'))
-source('dev.R')
 
 # VARS
 wd <- 'primates'
 
 # INPUT
-clstrs_obj <- genClstrsObj(wd)
+all_cls <- read_phylota(wd)
 
 # CLTYPE STATS
-# drop clusters of 1
-n_taxa <- getClNTx(clstrs_obj,
-                   clstrs_obj@clstr_ids)
-keep <- names(n_taxa)[n_taxa > 10]
-clstrs_obj <- drpClstrs(clstrs_obj, keep)
-table(sapply(clstrs_obj@clstrs, function(x) x[['cl_type']]))
+# drop clusters of 10
+# n_taxa <- get_ntaxa(all_cls, cid=all_cls@cids)
+# n_taxa <- get_cl_slot(all_cls, cid=all_cls@cids, slt_nm='ntx')
+# keep <- names(n_taxa)[n_taxa > 10]
+keep <- all_cls@cids[1:100]
+all_cls <- drop_cls(all_cls, keep)
+table(sapply(all_cls@cls@cls, function(x) x@typ))
 
 # REDUCE
 # get n taxa per cluster
-n_taxa <- getClNTx(clstrs_obj,
-                   clstrs_obj@clstr_ids)
+#n_taxa <- get_ntaxa(all_cls, cid=all_cls@cids)
 # drop all clusters with fewer than 100 taxa
-keep <- names(n_taxa)[n_taxa > 100]
-clstrs_obj <- drpClstrs(clstrs_obj, keep)
-
-# DROP SUSPECT SEQUENCES
-# 168275671, a synthetic sequence, not sure how to handle
-# 313882623 -- also synthetic
-blcklst <- c(168275671, 313882623)
-clstrs_obj <- rmSqs(clstrs_obj, blcklst)
+#keep <- names(n_taxa)[n_taxa > 100]
+#all_cls <- drop_cls(all_cls, keep)
 
 # FILTER
-for(cid in clstrs_obj@clstr_ids) {
-  clstrs_obj<- fltrClstrSqs(clstrs_obj, id=cid,
-                            rnk='genus', mn_pambg=0.5,
-                            n_ech=2)
-}
+genus_only <- drop_by_rank(all_cls, rnk='genus', n=2,
+                           choose_by=c('nncltds'),
+                           greatest=c(TRUE))
 
 # REDUCE
 # drop all clusters with MAD scores less than .5
-mad_scrs <- getClMAD(clstrs_obj, clstrs_obj@clstr_ids)
-keep <- names(mad_scrs)[mad_scrs > .5]
-clstrs_obj <- drpClstrs(clstrs_obj, keep)
+mad_scrs <- calc_mad(genus_only, genus_only@cids)
+keep <- names(mad_scrs)[mad_scrs > .8]
+genus_only <- drop_cls(genus_only, keep)
 
-# SUMMARY
-smmry <- genSumTable(clstrs_obj)
+# SUMMARISE
+smmry <- summary(genus_only)
+smmry <- smmry[order(smmry$N_taxa, decreasing=TRUE), ]
 write.csv(smmry, file.path('figures', 'best_clusters_primates.csv'))
+
+# KEEP ONLY TOP TEN
+slctd_smmry <- smmry[1:10, ]
+slctd_smmry$ID <- as.numeric(slctd_smmry$ID)
+slctd <- drop_cls(genus_only, as.character(slctd_smmry$ID))
 
 # OUTPUT
 # write out top 10 clusters with most taxa
-cids <- smmry[['id']][1:10]
 sqfls <- list.files(wd, pattern='sequences[0-9]+.fasta')
 rmFls(file.path(wd, sqfls))
-for(i in seq_along(cids)) {
-  cid <- clstrs_obj@clstr_ids[[i]]
-  getSqDfs(clstrs_obj, id=cid, prse=0.1)
-  # get its sequences IDs
-  sids <- clstrs_obj@clstrs[[cid]][['gis']]
-  tids <- sapply(sids, function(x) clstrs_obj@sqs[[x]][['ti']])
-  # get sci names for fasta def. lines
-  scnms <- getIDFrmTxdct(clstrs_obj@txdct, ret='ScientificName',
-                         id=tids, rnk='genus')
+for(i in seq_along(slctd@cids)) {
+  cid <- slctd@cids[i]
+  sids <- slctd@cls[[cid]]@sids
+  txids <- get_txids(slctd, cid=cid, rnk='genus')
+  scnms <- get_tx_slot(slctd, txids, 'scnm')
   n <- sapply(seq_along(scnms), function(x) 
     sum(scnms[x] == scnms[x:length(scnms)]))
+  sq_nm <- paste0(scnms, '_', n)
   infile <- file.path(wd, paste0('sequences', i, '.fasta'))
-  writeSqs(sids=sids, dflns=paste0(scnms, '_', n), flpth=infile)
+  write_sqs(phylota=slctd, outfile=infile, sid=sids,
+            sq_nm=sq_nm)
 }
 
 # ALIGN
 alfls <- list.files(wd, pattern='alignment[0-9]+.fasta')
 rmFls(file.path(wd, alfls))
-for(i in seq_along(cids)) {
+for(i in seq_along(slctd@cids)) {
   inpt <- file.path(wd, paste0('sequences', i,
                                '.fasta'))
   otpt <- file.path(wd, paste0('alignment', i,'.fasta'))

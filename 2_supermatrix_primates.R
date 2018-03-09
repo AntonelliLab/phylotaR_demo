@@ -5,7 +5,7 @@ source(file.path('tools', 'supermatrix_tools.R'))
 
 # VARS
 wd <- 'primates'
-prosimians <- read.delim(file.path(wd, 'prosimians'),
+prosimians <- read.delim(file.path('expected', 'prosimians_list.txt'),
                          stringsAsFactors=FALSE)[ ,1]
 
 # INPUT
@@ -64,9 +64,9 @@ outgroup <- paste0(outgroup, collapse=',')
 # Warning: partition.txt may need minor modification depending on gene type
 inpt <- file.path(wd, 'supermatrix.fasta')
 prttnfl <- file.path(wd, 'partition.txt')
-system(paste0('raxmlHPC -f a -m GTRGAMMA -T 2 -# 100 -p ',
+system(paste0('raxmlHPC -f a -m GTRGAMMA -T 2 -# 10 -p ',
               sample(0:10000000, 1), ' -x ', sample(0:10000000, 1),
-              ' -n primates -s ', inpt, ' -q ', prttnfl, ' -o ', outgroup))
+              ' -n primates -s ', inpt, ' -q ', prttnfl))#, ' -o ', outgroup))
 # consensus
 system('raxmlHPC -m GTRCAT -J MR -z RAxML_bootstrap.primates -n primates_con')
 

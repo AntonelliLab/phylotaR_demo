@@ -8,7 +8,7 @@ source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
 wd <- 'primates'
-prosimians <- read.delim(file.path(wd, 'prosimians'),
+prosimians <- read.delim(file.path('expected', 'prosimians_list.txt'),
                          stringsAsFactors=FALSE)[ ,1]
 
 # INPUT
