@@ -29,6 +29,8 @@ getNNs <- function(phylo) {
 calcNNs <- function(phylo) {
   # Proportion of tips who are sister with their genus
   nns <- getNNs(phylo)
+  keep <- grepl('_2$', names(nns))
+  nns <- nns[keep]
   res <- sapply(seq_along(nns), function(x) {
     pttrn <- sub('_[0-9]+', '', names(nns)[[x]])
     any(grepl(pttrn, nns[[x]]))
@@ -64,12 +66,15 @@ reduceToFamily <- function(phylo, parent, tp_gls) {
   tm2Phylo(tree)
 }
 
-compareTrees <- function(phylo_1, phylo_2, parallel=FALSE) {
+compareTrees <- function(phylo_1, phylo_2, parallel=FALSE,
+                         nrmlsd=TRUE) {
   tree_1 <- phylo2TM(phylo_1)
   tree_2 <- phylo2TM(phylo_2)
   tree_1 <- suppressMessages(treeman::addNdmtrx(tree_1))
   tree_2 <- suppressMessages(treeman::addNdmtrx(tree_2))
-  rf_dst <- treeman::calcDstRF(tree_1, tree_2)
-  trp_dst <- treeman::calcDstTrp(tree_1, tree_2, parallel=parallel)
+  rf_dst <- treeman::calcDstRF(tree_1, tree_2, nrmlsd=nrmlsd)
+  trp_dst <- treeman::calcDstTrp(tree_1, tree_2,
+                                 parallel=parallel,
+                                 nrmlsd=nrmlsd)
   data.frame('rf_dst'=rf_dst, 'trp_dst'=trp_dst)
 }

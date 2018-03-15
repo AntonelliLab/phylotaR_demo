@@ -69,7 +69,7 @@ tree_cmp <- ladderize(tree_cmp)
 expctd <- ladderize(expctd)
 
 # DISTS
-dsts <- compareTrees(tree, expctd, parallel=FALSE)
+dsts <- compareTrees(tree_cmp, expctd, parallel=FALSE)
 write.csv(dsts, file=file.path('figures', 'palms_dst.csv'),
           row.names=FALSE)
 

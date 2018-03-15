@@ -1,5 +1,4 @@
 # Visualise the primates tree
-# TODO: update reduction to the tribe level
 
 # LIBS
 library(ape)
@@ -58,7 +57,7 @@ nd_lbls[spprt > 95] <- '***'
 # PLOT
 png(file.path('figures', 'primates.png'), width=2000, height=2000)
 par(mar=c(.1, .1, .1, .1))
-plot(tree, edge.width=4, cex=3.5)
+plot(tree, edge.width=4, cex=2)
 nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
 
@@ -67,13 +66,17 @@ to_drp <- expctd$tip.label[!expctd$tip.label %in% tree$tip.label]
 expctd <- drop.tip(expctd, tip=to_drp)
 to_drp <- tree$tip.label[!tree$tip.label %in% expctd$tip.label]
 tree_cmp <- drop.tip(tree, tip=to_drp)
-tree_cmp <- ladderize(tree_cmp)
-expctd <- ladderize(expctd)
+tree_cmp <- ladderize(tree_cmp, right=TRUE)
+expctd <- ladderize(expctd, right=TRUE)
 
 # DISTS
-dsts <- compareTrees(tree, expctd)
+dsts <- compareTrees(tree_cmp, expctd)
 write.csv(dsts, file=file.path('figures', 'primates_dst.csv'),
           row.names=FALSE)
+
+# REDUCE
+tree_cmp <- reduceToFamily(tree_cmp, parent='Primates', tp_gls='family')
+expected <- reduceToFamily(expected, parent='Primates')
 
 # COPLOT
 if(!exists('dsts')) {
@@ -84,15 +87,16 @@ if(!exists('genera_counts')) {
 }
 png(file.path('figures', 'primates_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
+association <- cbind(tree_cmp$tip.label, tree_cmp$tip.label)
 suppressWarnings(cophyloplot(tree_cmp, expctd, space=10,
-                             gap=5))
+                             gap=5, assoc=association))
 mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
 mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
-mtext(text=paste0('RF dist: ', dsts[['rf_dst']],
-                  ' | TRP dist: ', dsts[['trp_dst']]),
+mtext(text=paste0('RF ', round(dsts[['rf_dst']], 3),
+                  ' | TRP ', round(dsts[['trp_dst']], 3)),
       side=1, line=-1, adj=.1, cex=2.5)
 mtext(text=paste0('Obs N. ', genera_counts[['obs']],
-                  ' | Actual N. ', genera_counts[['actual']],
+                  ' | Exp. ', genera_counts[['actual']],
                   ' (', signif(genera_counts[['prp']], 2), ')'),
       side=1, line=-1, adj=.9, cex=2.5)
 dev.off()
