@@ -68,6 +68,8 @@ reduceToFamily <- function(phylo, parent, tp_gls) {
 
 compareTrees <- function(phylo_1, phylo_2, parallel=FALSE,
                          nrmlsd=TRUE) {
+  phylo_1 <- tree_cmp
+  phylo_2 <- expctd
   tree_1 <- phylo2TM(phylo_1)
   tree_2 <- phylo2TM(phylo_2)
   tree_1 <- suppressMessages(treeman::addNdmtrx(tree_1))
