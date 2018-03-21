@@ -1,6 +1,7 @@
 # Identify best clusters
 
 # LIBS
+library(ggplot2)
 library(phylotaR)
 source(file.path('tools', 'selection_tools.R'))
 
@@ -12,40 +13,67 @@ all_cls <- read_phylota(wd)
 
 # CLTYPE STATS
 # drop clusters of 10
-# n_taxa <- get_ntaxa(all_cls, cid=all_cls@cids)
-# n_taxa <- get_cl_slot(all_cls, cid=all_cls@cids, slt_nm='ntx')
-# keep <- names(n_taxa)[n_taxa > 10]
-keep <- all_cls@cids[1:100]
+n_taxa <- get_cl_slot(all_cls, cid=all_cls@cids, slt_nm='ntx')
+keep <- names(n_taxa)[n_taxa > 10]
 all_cls <- drop_cls(all_cls, keep)
 table(sapply(all_cls@cls@cls, function(x) x@typ))
 
-# REDUCE
-# get n taxa per cluster
-#n_taxa <- get_ntaxa(all_cls, cid=all_cls@cids)
-# drop all clusters with fewer than 100 taxa
-#keep <- names(n_taxa)[n_taxa > 100]
-#all_cls <- drop_cls(all_cls, keep)
+# PLOT
+# genus treemap
+genus_txids <- unique(get_txids(phylota=all_cls,
+                                txids=all_cls@txids,
+                                rnk='genus'))
+genus_txids <- genus_txids[genus_txids != '']
+txnms <- get_tx_slot(phylota=all_cls, txid=genus_txids,
+                     slt_nm='scnm')
+txnms <- sort(txnms, decreasing=TRUE)
+p <- plot_phylota_treemap(phylota=all_cls, txids=genus_txids,
+                          txnms=txnms, area='nsq', fill='ncl')
+png(file.path('results', 'primates_tx_treemap.png'), width=2000, height=2000)
+print(p + theme(legend.position='none'))
+dev.off()
+# cluster treemap
+p <- plot_phylota_treemap(phylota=all_cls, cids=all_cls@cids,
+                          area='nsq', fill='ntx')
+png(file.path('results', 'primates_cl_treemap.png'), width=2000, height=2000)
+print(p + theme(legend.position='none'))
+dev.off()
 
-# FILTER
+# REDUCE TO GENUS
 genus_only <- drop_by_rank(all_cls, rnk='genus', n=2,
-                           choose_by=c('nncltds'),
-                           greatest=c(TRUE))
+                           choose_by= c("pambgs", "age",
+                                        "nncltds"),
+                           greatest = c(FALSE, FALSE,
+                                        TRUE))
 
-# REDUCE
-# drop all clusters with MAD scores less than .5
-mad_scrs <- calc_mad(genus_only, genus_only@cids)
-keep <- names(mad_scrs)[mad_scrs > .8]
-genus_only <- drop_cls(genus_only, keep)
-
-# SUMMARISE
+# SUMMARISE AND FILTER
+# count n genera per cid
+n_genera <- sapply(genus_only@cids, function(x) {
+  length(unique(get_txids(phylota=genus_only, cid=x, rnk='genus')))
+})
 smmry <- summary(genus_only)
+smmry[['N_taxa']] <- n_genera
+# drop all with fewer than 0.5 MAD
+smmry <- smmry[smmry[['MAD']] > 0.5, ]
 smmry <- smmry[order(smmry$N_taxa, decreasing=TRUE), ]
-write.csv(smmry, file.path('figures', 'best_clusters_primates.csv'))
 
-# KEEP ONLY TOP TEN
+# SELECT
 slctd_smmry <- smmry[1:10, ]
 slctd_smmry$ID <- as.numeric(slctd_smmry$ID)
 slctd <- drop_cls(genus_only, as.character(slctd_smmry$ID))
+write.csv(slctd_smmry, file.path('results', 'best_clusters_primates.csv'))
+
+# PLOT
+genera <- unique(get_txids(phylota=all_cls,
+                           txids=all_cls@txids, rnk='genus'))
+genera <- genera[genera != '']
+txnms <- get_tx_slot(phylota=slctd, txid=genera, slt_nm='scnm')
+ordd <- order(txnms, decreasing=TRUE)
+p <- plot_phylota_pa(phylota=slctd, cids=slctd@cids,
+                     txids=genera[ordd], txnms=txnms[ordd])
+png(file.path('results', 'primates_cl_pamap.png'), width=2000, height=2000)
+print(p)
+dev.off()
 
 # OUTPUT
 # write out top 10 clusters with most taxa

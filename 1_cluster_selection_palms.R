@@ -1,77 +1,101 @@
 # Identify best clusters
 
 # LIBS
+library(ggplot2)
 library(phylotaR)
 source(file.path('tools', 'selection_tools.R'))
-source('dev.R')
 
 # VARS
 wd <- 'palms'
 
 # INPUT
-clstrs_obj <- genClstrsObj(wd)
+all_cls <- read_phylota(wd)
 
 # CLTYPE STATS
-# drop clusters of 1
-n_taxa <- getClNTx(clstrs_obj,
-                   clstrs_obj@clstr_ids)
+# drop clusters of 10
+n_taxa <- get_cl_slot(all_cls, cid=all_cls@cids, slt_nm='ntx')
 keep <- names(n_taxa)[n_taxa > 10]
-clstrs_obj <- drpClstrs(clstrs_obj, keep)
-table(sapply(clstrs_obj@clstrs, function(x) x[['cl_type']]))
+all_cls <- drop_cls(all_cls, keep)
+table(sapply(all_cls@cls@cls, function(x) x@typ))
 
-# REDUCE
-# get n taxa per cluster
-n_taxa <- getClNTx(clstrs_obj,
-                   clstrs_obj@clstr_ids)
-# drop all clusters with fewer than 100 taxa
-keep <- names(n_taxa)[n_taxa > 100]
-clstrs_obj <- drpClstrs(clstrs_obj, keep)
+# PLOT
+# tribe treemap
+tribe_txids <- unique(get_txids(phylota=all_cls,
+                                txids=all_cls@txids,
+                                rnk='tribe'))
+tribe_txids <- tribe_txids[tribe_txids != '']
+txnms <- get_tx_slot(phylota=all_cls, txid=tribe_txids,
+                     slt_nm='scnm')
+txnms <- sort(txnms, decreasing=TRUE)
+p <- plot_phylota_treemap(phylota=all_cls, txids=tribe_txids,
+                          txnms=txnms, area='nsq', fill='ncl')
+png(file.path('results', 'palms_tx_treemap.png'), width=2000, height=2000)
+print(p + theme(legend.position='none'))
+dev.off()
+# cluster treemap
+p <- plot_phylota_treemap(phylota=all_cls, cids=all_cls@cids,
+                          area='nsq', fill='ntx')
+png(file.path('results', 'palms_cl_treemap.png'), width=2000, height=2000)
+print(p + theme(legend.position='none'))
+dev.off()
 
-# DROP SUSPECT SEQUENCES
-blcklst <- c(62511848, 353531054, 440579093)
-clstrs_obj <- rmSqs(clstrs_obj, blcklst)
+# REDUCE TO TRIBE
+tribe_only <- drop_by_rank(all_cls, rnk='tribe', n=2,
+                           choose_by= c("pambgs", "age",
+                                        "nncltds"),
+                           greatest = c(FALSE, FALSE,
+                                        TRUE))
 
-# FILTER
-for(id in clstrs_obj@clstr_ids) {
-  clstrs_obj<- fltrClstrSqs(clstrs_obj, id=id,
-                            rnk='tribe', mn_pambg=0.5,
-                            n_ech=2)
-}
+# SUMMARISE AND FILTER
+# count n genera per cid
+n_tribes <- sapply(tribe_only@cids, function(x) {
+  length(unique(get_txids(phylota=tribe_only, cid=x, rnk='tribe')))
+})
+smmry <- summary(tribe_only)
+smmry[['N_taxa']] <- n_tribes
+# drop all with fewer than 0.5 MAD
+smmry <- smmry[smmry[['MAD']] > 0.5, ]
+smmry <- smmry[order(smmry$N_taxa, decreasing=TRUE), ]
 
-# REDUCE
-# drop all clusters with MAD scores less than .5
-mad_scrs <- getClMAD(clstrs_obj, clstrs_obj@clstr_ids)
-keep <- names(mad_scrs)[mad_scrs > .5]
-clstrs_obj <- drpClstrs(clstrs_obj, keep)
+# SELECT
+slctd_smmry <- smmry[1:10, ]
+slctd_smmry$ID <- as.numeric(slctd_smmry$ID)
+slctd <- drop_cls(tribe_only, as.character(slctd_smmry$ID))
+write.csv(slctd_smmry, file.path('results', 'best_clusters_palms.csv'))
 
-# SUMMARY
-smmry <- genSumTable(clstrs_obj)
-write.csv(smmry, file.path('figures', 'best_clusters_palms.csv'))
+# PLOT
+tribes <- unique(get_txids(phylota=all_cls,
+                           txids=all_cls@txids, rnk='tribe'))
+tribes <- tribes[tribes != '']
+txnms <- get_tx_slot(phylota=slctd, txid=tribes, slt_nm='scnm')
+ordd <- order(txnms, decreasing=TRUE)
+p <- plot_phylota_pa(phylota=slctd, cids=slctd@cids,
+                     txids=tribes[ordd], txnms=txnms[ordd])
+png(file.path('results', 'palms_cl_pamap.png'), width=2000, height=2000)
+print(p)
+dev.off()
 
 # OUTPUT
 # write out top 10 clusters with most taxa
-cids <- smmry[['id']][1:10]
 sqfls <- list.files(wd, pattern='sequences[0-9]+.fasta')
 rmFls(file.path(wd, sqfls))
-for(i in seq_along(cids)) {
-  cid <- clstrs_obj@clstr_ids[[i]]
-  getSqDfs(clstrs_obj, id=cid, prse=0.1)
-  # get its sequences IDs
-  sids <- clstrs_obj@clstrs[[cid]][['gis']]
-  tids <- sapply(sids, function(x) clstrs_obj@sqs[[x]][['ti']])
-  # get sci names for fasta def. lines
-  scnms <- getIDFrmTxdct(clstrs_obj@txdct, ret='ScientificName',
-                         id=tids, rnk='tribe')
+for(i in seq_along(slctd@cids)) {
+  cid <- slctd@cids[i]
+  sids <- slctd@cls[[cid]]@sids
+  txids <- get_txids(slctd, cid=cid, rnk='tribe')
+  scnms <- get_tx_slot(slctd, txids, 'scnm')
   n <- sapply(seq_along(scnms), function(x) 
     sum(scnms[x] == scnms[x:length(scnms)]))
+  sq_nm <- paste0(scnms, '_', n)
   infile <- file.path(wd, paste0('sequences', i, '.fasta'))
-  writeSqs(sids=sids, dflns=paste0(scnms, '_', n), flpth=infile)
+  write_sqs(phylota=slctd, outfile=infile, sid=sids,
+            sq_nm=sq_nm)
 }
 
 # ALIGN
 alfls <- list.files(wd, pattern='alignment[0-9]+.fasta')
 rmFls(file.path(wd, alfls))
-for(i in seq_along(cids)) {
+for(i in seq_along(slctd@cids)) {
   inpt <- file.path(wd, paste0('sequences', i,
                                '.fasta'))
   otpt <- file.path(wd, paste0('alignment', i,'.fasta'))
