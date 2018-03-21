@@ -32,12 +32,14 @@ p <- plot_phylota_treemap(phylota=all_cls, txids=genus_txids,
 png(file.path('results', 'primates_tx_treemap.png'), width=2000, height=2000)
 print(p + theme(legend.position='none'))
 dev.off()
+saveRDS(p, file.path('figures', 'primates_tx_treemap.RData'))
 # cluster treemap
 p <- plot_phylota_treemap(phylota=all_cls, cids=all_cls@cids,
                           area='nsq', fill='ntx')
 png(file.path('results', 'primates_cl_treemap.png'), width=2000, height=2000)
 print(p + theme(legend.position='none'))
 dev.off()
+saveRDS(p, file.path('figures', 'primates_cl_treemap.RData'))
 
 # REDUCE TO GENUS
 genus_only <- drop_by_rank(all_cls, rnk='genus', n=2,
@@ -53,8 +55,8 @@ n_genera <- sapply(genus_only@cids, function(x) {
 })
 smmry <- summary(genus_only)
 smmry[['N_taxa']] <- n_genera
-# drop all with fewer than 0.5 MAD
-smmry <- smmry[smmry[['MAD']] > 0.5, ]
+# drop all with fewer than 0.6 MAD
+smmry <- smmry[smmry[['MAD']] > 0.6, ]
 smmry <- smmry[order(smmry$N_taxa, decreasing=TRUE), ]
 
 # SELECT
@@ -74,6 +76,7 @@ p <- plot_phylota_pa(phylota=slctd, cids=slctd@cids,
 png(file.path('results', 'primates_cl_pamap.png'), width=2000, height=2000)
 print(p)
 dev.off()
+saveRDS(p, file.path('figures', 'primates_cl_pamap.RData'))
 
 # OUTPUT
 # write out top 10 clusters with most taxa

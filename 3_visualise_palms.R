@@ -61,6 +61,7 @@ par(mar=c(.1, .1, .1, .1))
 plot(tree, edge.width=4, cex=3.5)
 nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
+saveRDS(tree, file.path('figures', 'palms_tree.RData'))
 
 # DROP UNSHARED TIPS
 to_drp <- tree$tip.label[!tree$tip.label %in% expctd$tip.label]

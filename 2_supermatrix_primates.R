@@ -15,7 +15,7 @@ for(i in seq_along(alfls)) {
 
 # DROP OVERHANGING EDGES
 (sapply(als, function(x) nchar(x[[1]])))
-als <- drpOvrhngs(als, ctff = 0.5)
+als <- drpOvrhngs(als, ctff=0.75)
 (sapply(als, function(x) nchar(x[[1]])))
 n_taxa <- sapply(als, length)
 

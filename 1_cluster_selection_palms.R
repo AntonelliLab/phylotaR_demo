@@ -32,12 +32,14 @@ p <- plot_phylota_treemap(phylota=all_cls, txids=tribe_txids,
 png(file.path('results', 'palms_tx_treemap.png'), width=2000, height=2000)
 print(p + theme(legend.position='none'))
 dev.off()
+saveRDS(p, file.path('figures', 'palms_tx_treemap.RData'))
 # cluster treemap
 p <- plot_phylota_treemap(phylota=all_cls, cids=all_cls@cids,
                           area='nsq', fill='ntx')
 png(file.path('results', 'palms_cl_treemap.png'), width=2000, height=2000)
 print(p + theme(legend.position='none'))
 dev.off()
+saveRDS(p, file.path('figures', 'palms_cl_treemap.RData'))
 
 # REDUCE TO TRIBE
 tribe_only <- drop_by_rank(all_cls, rnk='tribe', n=2,
@@ -74,6 +76,7 @@ p <- plot_phylota_pa(phylota=slctd, cids=slctd@cids,
 png(file.path('results', 'palms_cl_pamap.png'), width=2000, height=2000)
 print(p)
 dev.off()
+saveRDS(p, file.path('figures', 'palms_cl_pamap.RData'))
 
 # OUTPUT
 # write out top 10 clusters with most taxa

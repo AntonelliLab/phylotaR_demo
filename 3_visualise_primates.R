@@ -42,7 +42,7 @@ esrch <- rentrez::entrez_search(db='taxonomy', term='txid9443[Subtree] AND genus
 genera_counts <- data.frame('actual'=esrch[['count']],
                             'obs'=length(tree$tip.label))
 genera_counts[['prp']] <- genera_counts[['obs']]/genera_counts[['actual']]
-write.csv(genera_counts, file=file.path('figures', 'primates_counts.csv'),
+write.csv(genera_counts, file=file.path('results', 'primates_counts.csv'),
           row.names=FALSE)
 
 # BRANCH SUPPORTS
@@ -55,11 +55,12 @@ nd_lbls[spprt > 75] <- '**'
 nd_lbls[spprt > 95] <- '***'
 
 # PLOT
-png(file.path('figures', 'primates.png'), width=2000, height=2000)
+png(file.path('results', 'primates.png'), width=2000, height=2000)
 par(mar=c(.1, .1, .1, .1))
 plot(tree, edge.width=4, cex=2)
 nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
+saveRDS(tree, file.path('figures', 'primates_tree.RData'))
 
 # DROP UNSHARED TIPS
 to_drp <- expctd$tip.label[!expctd$tip.label %in% tree$tip.label]
@@ -71,7 +72,7 @@ expctd <- ladderize(expctd, right=TRUE)
 
 # DISTS
 dsts <- compareTrees(tree_cmp, expctd)
-write.csv(dsts, file=file.path('figures', 'primates_dst.csv'),
+write.csv(dsts, file=file.path('results', 'primates_dst.csv'),
           row.names=FALSE)
 
 # REDUCE
@@ -80,23 +81,22 @@ expected <- reduceToFamily(expected, parent='Primates')
 
 # COPLOT
 if(!exists('dsts')) {
-  dsts <- read.csv(file.path('figures', 'primates_dst.csv'))
+  dsts <- read.csv(file.path('results', 'primates_dst.csv'))
 }
 if(!exists('genera_counts')) {
-  genera_counts <- read.csv(file.path('figures', 'primates_counts.csv'))
+  genera_counts <- read.csv(file.path('results', 'primates_counts.csv'))
 }
-png(file.path('figures', 'primates_coplot.png'), width=2000, height=2000)
+png(file.path('results', 'primates_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
-association <- cbind(tree_cmp$tip.label, tree_cmp$tip.label)
 suppressWarnings(cophyloplot(tree_cmp, expctd, space=10,
-                             gap=5, assoc=association))
+                             gap=5))
 mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
 mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
 mtext(text=paste0('RF ', round(dsts[['rf_dst']], 3),
                   ' | TRP ', round(dsts[['trp_dst']], 3)),
       side=1, line=-1, adj=.1, cex=2.5)
 mtext(text=paste0('Obs N. ', genera_counts[['obs']],
-                  ' | Exp. ', genera_counts[['actual']],
+                  ' | Actual N. ', genera_counts[['actual']],
                   ' (', signif(genera_counts[['prp']], 2), ')'),
       side=1, line=-1, adj=.9, cex=2.5)
 dev.off()
