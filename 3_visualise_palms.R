@@ -1,9 +1,7 @@
 # Visualise the palms tree
-# TODO: update reduction to the tribe level
 
 # LIBS
 library(ape)
-library(doMC)
 source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
@@ -61,6 +59,7 @@ par(mar=c(.1, .1, .1, .1))
 plot(tree, edge.width=4, cex=3.5)
 nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
+tree$node.label <- nd_lbls
 saveRDS(tree, file.path('figures', 'palms_tree.RData'))
 
 # DROP UNSHARED TIPS

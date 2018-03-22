@@ -2,7 +2,6 @@
 
 # LIBS
 library(ape)
-library(doMC)
 source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
@@ -60,6 +59,7 @@ par(mar=c(.1, .1, .1, .1))
 plot(tree, edge.width=4, cex=2)
 nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
+tree$node.label <- nd_lbls
 saveRDS(tree, file.path('figures', 'primates_tree.RData'))
 
 # DROP UNSHARED TIPS
@@ -74,10 +74,6 @@ expctd <- ladderize(expctd, right=TRUE)
 dsts <- compareTrees(tree_cmp, expctd)
 write.csv(dsts, file=file.path('results', 'primates_dst.csv'),
           row.names=FALSE)
-
-# REDUCE
-tree_cmp <- reduceToFamily(tree_cmp, parent='Primates', tp_gls='family')
-expected <- reduceToFamily(expected, parent='Primates')
 
 # COPLOT
 if(!exists('dsts')) {

@@ -56,7 +56,7 @@ writeSqs(sprmtrx, fl=file.path(wd, 'supermatrix.fasta'))
 # Warning: partition.txt may need minor modification depending on gene type
 inpt <- file.path(wd, 'supermatrix.fasta')
 prttnfl <- file.path(wd, 'partition.txt')
-system(paste0('raxmlHPC -f a -m GTRGAMMA -T 2 -# 100 -p ',
+system(paste0('raxmlHPC -f a -m GTRGAMMA -T 2 -# 10 -p ',
               sample(0:10000000, 1), ' -x ', sample(0:10000000, 1),
               ' -n primates -s ', inpt, ' -q ', prttnfl))
 # consensus

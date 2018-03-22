@@ -4,6 +4,9 @@ drpOvrhngs <- function(als, ctff=.75) {
                        nrow=length(als[[i]]))
     for(j in seq_along(als[[i]])) {
       pull <- gregexpr('-', als[[i]][[j]])[[1]]
+      if(pull[1] == -1) {
+        next
+      }
       gps_mtrx[j, pull] <- TRUE
     }
     prp_mssng <- 1 - (colSums(gps_mtrx)/nrow(gps_mtrx))

@@ -55,8 +55,7 @@ n_tribes <- sapply(tribe_only@cids, function(x) {
 })
 smmry <- summary(tribe_only)
 smmry[['N_taxa']] <- n_tribes
-# drop all with fewer than 0.5 MAD
-smmry <- smmry[smmry[['MAD']] > 0.5, ]
+smmry <- smmry[smmry[['MAD']] > 0.75, ]
 smmry <- smmry[order(smmry$N_taxa, decreasing=TRUE), ]
 
 # SELECT
