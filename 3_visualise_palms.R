@@ -35,6 +35,7 @@ expctd <- reduceToFamily(expctd, parent='Arecaceae',
 calamoideae <- calamoideae[calamoideae %in% tree$tip.label]
 tree <- unroot(tree)
 tree <- root(tree, outgroup=calamoideae, resolve.root=TRUE)
+write.tree(tree, file=file.path('results', 'palms.tre'))
 
 # HOW MANY TRIBES?
 esrch <- rentrez::entrez_search(db='taxonomy', term='txid4710[Subtree] AND tribe[Rank]')

@@ -35,6 +35,7 @@ expctd$tip.label <- sub('_.*$', '', expctd$tip.label)
 prosimians <- prosimians[prosimians %in% tree$tip.label]
 tree <- unroot(tree)
 tree <- root(tree, outgroup=prosimians, resolve.root=TRUE)
+write.tree(tree, file=file.path('results', 'primates.tre'))
 
 # HOW MANY GENERA?
 esrch <- rentrez::entrez_search(db='taxonomy', term='txid9443[Subtree] AND genus[Rank]')
