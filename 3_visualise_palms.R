@@ -1,9 +1,7 @@
 # Visualise the palms tree
-# TODO: update reduction to the tribe level
 
 # LIBS
 library(ape)
-library(doMC)
 source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
@@ -37,6 +35,7 @@ expctd <- reduceToFamily(expctd, parent='Arecaceae',
 calamoideae <- calamoideae[calamoideae %in% tree$tip.label]
 tree <- unroot(tree)
 tree <- root(tree, outgroup=calamoideae, resolve.root=TRUE)
+write.tree(tree, file=file.path('results', 'palms.tre'))
 
 # HOW MANY TRIBES?
 esrch <- rentrez::entrez_search(db='taxonomy', term='txid4710[Subtree] AND tribe[Rank]')
@@ -61,6 +60,7 @@ par(mar=c(.1, .1, .1, .1))
 plot(tree, edge.width=4, cex=3.5)
 nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
+tree$node.label <- nd_lbls
 saveRDS(tree, file.path('figures', 'palms_tree.RData'))
 
 # DROP UNSHARED TIPS

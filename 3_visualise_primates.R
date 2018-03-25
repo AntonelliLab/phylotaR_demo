@@ -2,7 +2,6 @@
 
 # LIBS
 library(ape)
-library(doMC)
 source(file.path('tools', 'treeman_tools.R'))
 
 # VARS
@@ -36,6 +35,7 @@ expctd$tip.label <- sub('_.*$', '', expctd$tip.label)
 prosimians <- prosimians[prosimians %in% tree$tip.label]
 tree <- unroot(tree)
 tree <- root(tree, outgroup=prosimians, resolve.root=TRUE)
+write.tree(tree, file=file.path('results', 'primates.tre'))
 
 # HOW MANY GENERA?
 esrch <- rentrez::entrez_search(db='taxonomy', term='txid9443[Subtree] AND genus[Rank]')
@@ -60,6 +60,7 @@ par(mar=c(.1, .1, .1, .1))
 plot(tree, edge.width=4, cex=2)
 nodelabels(text=nd_lbls, frame='none', cex=2.5, adj=-.25)
 dev.off()
+tree$node.label <- nd_lbls
 saveRDS(tree, file.path('figures', 'primates_tree.RData'))
 
 # DROP UNSHARED TIPS
@@ -74,10 +75,6 @@ expctd <- ladderize(expctd, right=TRUE)
 dsts <- compareTrees(tree_cmp, expctd)
 write.csv(dsts, file=file.path('results', 'primates_dst.csv'),
           row.names=FALSE)
-
-# REDUCE
-tree_cmp <- reduceToFamily(tree_cmp, parent='Primates', tp_gls='family')
-expected <- reduceToFamily(expected, parent='Primates')
 
 # COPLOT
 if(!exists('dsts')) {

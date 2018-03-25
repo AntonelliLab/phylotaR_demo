@@ -43,10 +43,8 @@ saveRDS(p, file.path('figures', 'primates_cl_treemap.RData'))
 
 # REDUCE TO GENUS
 genus_only <- drop_by_rank(all_cls, rnk='genus', n=2,
-                           choose_by= c("pambgs", "age",
-                                        "nncltds"),
-                           greatest = c(FALSE, FALSE,
-                                        TRUE))
+                           choose_by= c("nncltds", 'pambgs'),
+                           greatest = c(TRUE, FALSE))
 
 # SUMMARISE AND FILTER
 # count n genera per cid
@@ -55,8 +53,7 @@ n_genera <- sapply(genus_only@cids, function(x) {
 })
 smmry <- summary(genus_only)
 smmry[['N_taxa']] <- n_genera
-# drop all with fewer than 0.6 MAD
-smmry <- smmry[smmry[['MAD']] > 0.6, ]
+smmry <- smmry[smmry[['MAD']] > 0.75, ]
 smmry <- smmry[order(smmry$N_taxa, decreasing=TRUE), ]
 
 # SELECT

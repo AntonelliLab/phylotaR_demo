@@ -9,6 +9,7 @@ palms/
 primates/
 figures/
 ncbi-blast-2.7.1+/
+*_old
 
 # History files
 .Rhistory
