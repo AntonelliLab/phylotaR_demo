@@ -66,6 +66,7 @@ saveRDS(tree, file.path('figures', 'palms_tree.RData'))
 # DROP UNSHARED TIPS
 to_drp <- tree$tip.label[!tree$tip.label %in% expctd$tip.label]
 tree_cmp <- drop.tip(tree, tip=to_drp)
+
 tree_cmp <- ladderize(tree_cmp)
 expctd <- ladderize(expctd)
 
@@ -81,10 +82,14 @@ if(!exists('dsts')) {
 if(!exists('genera_counts')) {
   genera_counts <- read.csv(file.path('results', 'palms_counts.csv'))
 }
+
+assoc <- cbind(tree_cmp$tip.label, tree_cmp$tip.label)
+tree_cmp <- rotate(tree_cmp, c("Caryoteae", "Borasseae"))
+
 png(file.path('results', 'palms_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
-suppressWarnings(cophyloplot(tree_cmp, expctd, space=10,
-                             gap=5, edge.width=2))
+suppressWarnings(cophyloplot(tree_cmp, expctd, space=80,
+                             gap=5, edge.width=2, assoc=assoc))
 mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
 mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
 mtext(text=paste0('RF: ', round(dsts[['rf_dst']], 3),
