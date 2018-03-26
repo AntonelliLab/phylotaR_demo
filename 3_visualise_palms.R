@@ -85,6 +85,8 @@ if(!exists('genera_counts')) {
 
 assoc <- cbind(tree_cmp$tip.label, tree_cmp$tip.label)
 tree_cmp <- rotate(tree_cmp, c("Caryoteae", "Borasseae"))
+tree_cmp <- rotate(tree_cmp, c("Calameae", "Lepidocaryeae"))
+tree_cmp <- rotate(tree_cmp, c("Euterpeae", "Pelagodoxeae"))
 
 png(file.path('results', 'palms_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
@@ -92,7 +94,7 @@ suppressWarnings(cophyloplot(tree_cmp, expctd, space=80,
                              gap=5, edge.width=2, assoc=assoc))
 mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
 mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
-mtext(text=paste0('RF: ', round(dsts[['rf_dst']], 3),
+mtext(text=paste0('RF ', round(dsts[['rf_dst']], 3),
                   ' | TRP ', round(dsts[['trp_dst']], 3)),
       side=1, line=-1, adj=.1, cex=2.5)
 mtext(text=paste0('Obs N. ', genera_counts[['obs']],

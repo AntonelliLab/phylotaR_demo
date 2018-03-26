@@ -83,10 +83,25 @@ if(!exists('dsts')) {
 if(!exists('genera_counts')) {
   genera_counts <- read.csv(file.path('results', 'primates_counts.csv'))
 }
+
+assoc <- cbind(tree_cmp$tip.label, tree_cmp$tip.label)
+tree_cmp <- rotate(tree_cmp, c("Piliocolobus", "Colobus"))
+tree_cmp <- rotate(tree_cmp, c("Propithecus", "Avahi"))
+tree_cmp <- rotate(tree_cmp, c("Perodicticus", "Arctocebus"))
+tree_cmp <- rotate(tree_cmp, c("Loris", "Galago"))
+tree_cmp <- rotate(tree_cmp, c("Loris", "Nycticebus"))
+tree_cmp <- rotate(tree_cmp, c("Microcebus", "Mirza"))
+tree_cmp <- rotate(tree_cmp, c("Callithrix", "Saguinus"))
+tree_cmp <- rotate(tree_cmp, c("Leontopithecus", "Saguinus"))
+tree_cmp <- rotate(tree_cmp, c("Callithrix", "Callimico"))
+tree_cmp <- rotate(tree_cmp, c("Nomascus", "Hylobates"))
+tree_cmp <- rotate(tree_cmp, c("Nasalis", "Pygathrix"))
+tree_cmp <- rotate(tree_cmp, c("Ateles", "Aotus"))
+
 png(file.path('results', 'primates_coplot.png'), width=2000, height=2000)
 par(cex=2, mar=c(1,.1,.1,.1))
-suppressWarnings(cophyloplot(tree_cmp, expctd, space=10,
-                             gap=5))
+suppressWarnings(cophyloplot(tree_cmp, expctd, space=80,
+                             gap=5, edge.width=2, assoc = assoc))
 mtext(text='phylotaR', side=3, cex=2.5, line=-1.5, adj=.25)
 mtext(text='Expected', side=3, cex=2.5, line=-1.5, adj=.75)
 mtext(text=paste0('RF ', round(dsts[['rf_dst']], 3),
