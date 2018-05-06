@@ -79,13 +79,15 @@ split.screen(figs=c(1,2))
 split.screen(figs=c(2,1), screen=1)
 screen(3)
 par(mar=c(.5,0,0,0))
-plot(palms, edge.width=.6, label.offset=2, srt=-10, cex=.5)
+plot(ladderize(palms), edge.width=.6, label.offset=2, srt=0, cex=.5,
+     font = 1)
 nodelabels(text=palms$node.label, frame='none', cex=.35,
            adj=c(-.1, .5))
 mtext(text='a.', side=1, cex=.75)
 screen(2)
 par(mar=c(.5,0,0,0))
-plot(primates, edge.width=.5, label.offset=1, srt=-10, cex=.3)
+plot(ladderize(primates), edge.width=.5, label.offset=1, srt=0,
+     cex=.3, font = 3)
 nodelabels(text=primates$node.label, frame='none', cex=.25,
            adj=c(-.1, .5))
 mtext(text='b.', side=1, cex=.75, line = -1)

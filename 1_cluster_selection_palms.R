@@ -11,6 +11,43 @@ wd <- 'palms'
 # INPUT
 all_cls <- read_phylota(wd)
 
+# RECREATE PhyLoTa TABLE
+# get phylogenetically inform. clusters
+n_taxa <- get_cl_slot(all_cls, cid = all_cls@cids, slt_nm = 'ntx')
+cltyps <- get_cl_slot(all_cls, all_cls@cids, slt_nm = 'typ')
+#picls <- cltyps %in% c('subtree', 'direct') & n_taxa >= 4
+picls <- n_taxa >= 4
+picls <- all_cls@cids[picls]
+# build table
+prnts <- get_cl_slot(all_cls, cid = picls, slt_nm = 'prnt')
+n_taxa <- get_cl_slot(all_cls, cid = picls, slt_nm = 'ntx')
+n_sqs <- get_cl_slot(all_cls, cid = picls, slt_nm = 'nsqs')
+n_gnra <- sapply(picls, function(x) {
+  length(unique(get_txids(all_cls, cid = x, rnk = 'genus')))
+})
+mxsqlngs <- sapply(picls, function(x) {
+  max(get_sq_slot(all_cls, cid = x, slt_nm = 'nncltds'))
+})
+mnsqlngs <- sapply(picls, function(x) {
+  min(get_sq_slot(all_cls, cid = x, slt_nm = 'nncltds'))
+})
+lngst <- sapply(picls, function(x) {
+  sids <- all_cls[[x]]@sids
+  lngths <- get_sq_slot(all_cls, sid = sids, slt_nm = 'nncltds')
+  sids[which.max(lngths)]
+})
+deflns <- get_sq_slot(all_cls, sid = lngst, slt_nm = 'dfln')
+mads <- sapply(picls, calc_mad, phylota = all_cls)
+phylota_table <- data.frame('Cluster.ID' = picls, 'Parent' = prnts,
+                            'TaxIDs' = n_taxa, 'GIs' = n_sqs,
+                            'Genera' = n_gnra, 'L.min' = mnsqlngs,
+                            'L.max' = mxsqlngs, 'MAD' = mads,
+                            'Defline.of.longest.sequence' = deflns)
+ordr <- order(phylota_table[['TaxIDs']], decreasing = TRUE)
+phylota_table <- phylota_table[ordr, ]
+write.csv(x = phylota_table, file = file.path('results', 'palms_phylota.csv'),
+          row.names = FALSE)
+
 # CLTYPE STATS
 # drop clusters of 10
 n_taxa <- get_cl_slot(all_cls, cid=all_cls@cids, slt_nm='ntx')
