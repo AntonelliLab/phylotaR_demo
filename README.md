@@ -8,6 +8,14 @@ A series of scripts for demonstrating the phylotaR pipeline for primates and pal
 - RAxML
 - MAFFT
 
+## Install specific phylotaR release
+
+```{r}
+# this will install the exact development version used to generate results
+devtools::install_github(repo='AntonelliLab/phylotaR', ref='5677e1560f7b0f8f60e5109072d5af0326338d69')
+# the code is not guarranteed to work with any other version
+```
+
 ## Folder set-up
 ```
 - palms
